@@ -27,6 +27,17 @@ INCLUDES  = -I./SDK -I.
 
 BUILD     = build
 
+# Per-machine install location. Override in Makefile.local (gitignored):
+#   GAME_DIR   = /path/to/game            e.g. .../Far Cry 6
+#   GAME_BIN   = $(GAME_DIR)/bin          where dbdata.dll/PluginLoader.dll go
+#   GAME_PLUGINS = $(GAME_DIR)/plugins    where FileHook.dll goes
+# Defaults (harmless; make install errors until overridden):
+GAME_DIR     = /nonexistent
+GAME_BIN     = $(GAME_DIR)/bin
+GAME_PLUGINS = $(GAME_DIR)/plugins
+
+-include Makefile.local
+
 NMD_SRCS  = nmd/assembly/nmd_common.c \
             nmd/assembly/nmd_x86_assembler.c \
             nmd/assembly/nmd_x86_decoder.c \
@@ -81,6 +92,20 @@ $(BUILD)/FileHook.dll: Plugins/Universal/FileHook/Entry.cpp
 dbdata:   $(BUILD)/dbdata.dll
 loader:   $(BUILD)/PluginLoader.dll
 filehook: $(BUILD)/FileHook.dll
+
+# ---- install (uses Makefile.local overrides) ------------------------------
+install: $(DLLS)
+	@test -d "$(GAME_BIN)" || { echo "ERROR: GAME_BIN '$(GAME_BIN)' not found (set it in Makefile.local)"; exit 1; }
+	@test -d "$(GAME_PLUGINS)" || { echo "ERROR: GAME_PLUGINS '$(GAME_PLUGINS)' not found (set it in Makefile.local)"; exit 1; }
+	@echo "== installing to $(GAME_BIN) =="
+	@if [ -f "$(GAME_BIN)/dbdata.dll" ] && [ ! -f "$(GAME_BIN)/dbdata.old.dll" ]; then \
+		echo "  backing up dbdata.dll -> dbdata.old.dll"; \
+		mv "$(GAME_BIN)/dbdata.dll" "$(GAME_BIN)/dbdata.old.dll"; \
+	fi
+	@cp "$(BUILD)/dbdata.dll" "$(BUILD)/PluginLoader.dll" "$(GAME_BIN)/"
+	@cp "$(BUILD)/FileHook.dll" "$(GAME_PLUGINS)/"
+	@echo "  installed dbdata.dll + PluginLoader.dll -> bin/, FileHook.dll -> plugins/"
+	@echo "  done. launch the game to capture FC6FileHook.log"
 
 clean:
 	rm -rf $(BUILD)

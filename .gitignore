@@ -1,6 +1,8 @@
 .vs/
 .git/
 out/
+build/
+Makefile.local
 *.dll
 *.lib
 *.exe
