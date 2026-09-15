@@ -60,9 +60,9 @@ LOADER_SRCS = PluginLoader/DllMain.cpp \
               PluginLoader/Game/Entity/CEntity.cpp
 LOADER_OBJS = $(patsubst %.cpp,$(BUILD)/%.o,$(LOADER_SRCS))
 
-DLLS = $(BUILD)/dbdata.dll $(BUILD)/PluginLoader.dll $(BUILD)/FileHook.dll
+DLLS = $(BUILD)/dbdata.dll $(BUILD)/PluginLoader.dll $(BUILD)/FileHook.dll $(BUILD)/DumpModule.dll
 
-.PHONY: all dbdata loader filehook clean
+.PHONY: all dbdata loader filehook dumpmodule clean
 all: $(DLLS)
 
 # ---- nmd (C) objects -------------------------------------------------------
@@ -89,9 +89,15 @@ $(BUILD)/FileHook.dll: Plugins/Universal/FileHook/Entry.cpp
 	@mkdir -p $(BUILD)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -D_USRDLL -D_WINDLL $(LDFLAGS) -o $@ $<
 
+# ---- DumpModule.dll (runtime module capture for Denuvo/VMProtect) ---------
+$(BUILD)/DumpModule.dll: Plugins/Universal/DumpModule/Entry.cpp
+	@mkdir -p $(BUILD)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -D_USRDLL -D_WINDLL $(LDFLAGS) -o $@ $<
+
 dbdata:   $(BUILD)/dbdata.dll
 loader:   $(BUILD)/PluginLoader.dll
 filehook: $(BUILD)/FileHook.dll
+dumpmodule: $(BUILD)/DumpModule.dll
 
 # ---- install (uses Makefile.local overrides) ------------------------------
 install: $(DLLS)
@@ -103,8 +109,8 @@ install: $(DLLS)
 		mv "$(GAME_BIN)/dbdata.dll" "$(GAME_BIN)/dbdata.old.dll"; \
 	fi
 	@cp "$(BUILD)/dbdata.dll" "$(BUILD)/PluginLoader.dll" "$(GAME_BIN)/"
-	@cp "$(BUILD)/FileHook.dll" "$(GAME_PLUGINS)/"
-	@echo "  installed dbdata.dll + PluginLoader.dll -> bin/, FileHook.dll -> plugins/"
+	@cp "$(BUILD)/FileHook.dll" "$(BUILD)/DumpModule.dll" "$(GAME_PLUGINS)/"
+	@echo "  installed dbdata.dll + PluginLoader.dll -> bin/, FileHook.dll + DumpModule.dll -> plugins/"
 	@echo "  done. launch the game to capture FC6FileHook.log"
 
 clean:
