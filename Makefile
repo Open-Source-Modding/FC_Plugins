@@ -65,9 +65,9 @@ $(BUILD)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 # ---- proxy -----------------------------------------------------------------
-$(BUILD)/dbdata.dll: Proxy/DBData.cpp
+$(BUILD)/dbdata.dll: Proxy/DBData.cpp Proxy/dbdata.def
 	@mkdir -p $(BUILD)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -D_USRDLL -D_WINDLL $(LDFLAGS) -o $@ $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -D_USRDLL -D_WINDLL $(LDFLAGS) -Wl,Proxy/dbdata.def -o $@ $<
 
 # ---- PluginLoader.dll ------------------------------------------------------
 $(BUILD)/PluginLoader.dll: $(LOADER_OBJS) $(NMD_OBJS)
