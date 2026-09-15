@@ -22,13 +22,13 @@ void *operator new[](size_t Size)
 }
 
 FORCEINLINE
-void operator delete(void *Address)
+void operator delete(void *Address) noexcept
 {
     return _aligned_free(Address);
 }
 
 FORCEINLINE
-void operator delete[](void *Address, size_t Elements)
+void operator delete[](void *Address, size_t Elements) noexcept
 {
     return _aligned_free(Address);
 }
